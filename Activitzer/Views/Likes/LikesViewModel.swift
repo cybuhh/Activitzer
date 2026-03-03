@@ -23,11 +23,6 @@ class LikesViewModel: ObservableObject {
 
   func loadConnections() {
     userConnections = loadUserConnections()
-//    if let firstUser = userConnections.first {
-//      selection = firstUser.id
-//    } else {
-//      selection = nil
-//    }
   }
 
   @MainActor
@@ -36,13 +31,13 @@ class LikesViewModel: ObservableObject {
       print(userConnections.first!.displayName)
       return
     }
-    let keychain = KeychainService()
-    let garminCredentails = try? keychain.loadGarminCredentails()
+    let credentialsService = CredentialsService(KeychainService.shared)
+    let garminCredentails = try? credentialsService.loadGarminCredentails()
     if garminCredentails == nil {
       return
     }
 
-    let garminTokenStorageKeychain = GarminConnectTokenStorageKeychain(KeychainService.keychainService)
+    let garminTokenStorageKeychain = GarminConnectTokenStorageKeychain(KeychainService.shared)
 
     Task {
       let garminConnectTokenManager = GarminConnectTokenManager(username: garminCredentails!.username, password: garminCredentails!.password, tokenStorage: garminTokenStorageKeychain)
