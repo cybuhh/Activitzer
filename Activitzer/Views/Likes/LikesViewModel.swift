@@ -31,21 +31,12 @@ class LikesViewModel: ObservableObject {
       print(userConnections.first!.displayName)
       return
     }
-    let credentialsService = CredentialsService(KeychainService.shared)
-    let garminCredentails = try? credentialsService.loadGarminCredentails()
-    if garminCredentails == nil {
-      return
-    }
-
-    let garminTokenStorageKeychain = GarminConnectTokenStorageKeychain(KeychainService.shared)
 
     Task {
-      let garminConnectTokenManager = GarminConnectTokenManager(username: garminCredentails!.username, password: garminCredentails!.password, tokenStorage: garminTokenStorageKeychain)
-      let garminConnect = GarminConnectClient(getAccessToken: { try await garminConnectTokenManager.getAccessToken() })
       do {
-        let connections = try await garminConnect.getUserConnections()
-        userConnections = connections.userConnections
-        saveUserConnections(userConnections)
+        let garminService = try GarminService()
+        let connections = try await garminService.fetchUserConnections()
+        userConnections = connections
       } catch RequestError.tooManyRequests {
         print("Too many requests")
       } catch GarminConnectTokenManager.GetValidTokenError.login {
