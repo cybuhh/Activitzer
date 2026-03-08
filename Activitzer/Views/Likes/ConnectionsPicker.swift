@@ -14,11 +14,6 @@ struct ConnectionsPicker: View {
       if selection.wrappedValue == nil || !users.contains(where: { $0.id == selection.wrappedValue }) {
         Text("Select connection")
       }
-//      if let selectedUser = users.first(where: { $0.id == selection.wrappedValue }) {
-//        ConnectionsPickerLabel(user: selectedUser)
-//      } else {
-//        Text("Select connection")
-//      }
     }
     .pickerStyle(.automatic)
   }

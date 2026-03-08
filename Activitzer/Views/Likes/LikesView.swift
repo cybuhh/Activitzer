@@ -15,7 +15,7 @@ struct LikesView: View {
         Button("Refresh list", systemImage: "arrow.trianglehead.2.clockwise.rotate.90.circle", action: viewModel.refreshConnections)
         if $viewModel.selection.wrappedValue != nil {
           ProgressView(value: progress, total: 100) {
-            Text("Linear Progress...")
+            Text("0 / \(viewModel.userActivities.count)")
           } currentValueLabel: {
             Text("\(Int(progress))%")
           }.tint(.purple)
