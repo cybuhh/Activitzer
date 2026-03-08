@@ -5,34 +5,33 @@ import SwiftUI
 
 struct LikesView: View {
   @StateObject private var viewModel = LikesViewModel()
-  @State private var progress: Double = 0.0
-  let timer = Timer.publish(every: 0.05, on: .main, in: .common).autoconnect()
 
   var body: some View {
-    VStack(alignment: .leading) {
-      List {
-        ConnectionsPicker(selection: $viewModel.selection, users: viewModel.userConnections)
-        Button("Refresh list", systemImage: "arrow.trianglehead.2.clockwise.rotate.90.circle", action: viewModel.refreshConnections)
-        if $viewModel.selection.wrappedValue != nil {
-          ProgressView(value: progress, total: 100) {
-            Text("0 / \(viewModel.userActivities.count)")
-          } currentValueLabel: {
-            Text("\(Int(progress))%")
-          }.tint(.purple)
-            .progressViewStyle(.linear)
-            .onReceive(timer) { _ in
-              if progress < 100 {
-                progress += 1
-              } else {
-                progress = 0
-              }
-            }.padding(.horizontal, 10)
+    if viewModel.isActivitiesLoading {
+      ProgressView("Loading activities")
+    } else {
+      VStack(alignment: .leading) {
+        List {
+          ConnectionsPicker(selection: $viewModel.selection, users: viewModel.userConnections)
+          Button("Refresh list", systemImage: "arrow.trianglehead.2.clockwise.rotate.90.circle", action: viewModel.refreshConnections)
+          if $viewModel.selection.wrappedValue != nil && viewModel.userActivities.count > 0 {
+            ProgressView(value: Double(viewModel.processedLikes), total: Double(viewModel.userActivities.count)) {
+              Text("\(viewModel.processedLikes) / \(viewModel.userActivities.count)")
+            } currentValueLabel: {
+              Text("\(viewModel.progressLikes)%")
+            }.tint(.purple)
+              .progressViewStyle(.linear)
+              .padding(.horizontal, 10)
+            if viewModel.isProcessingLikes == false {
+              Button("do it", systemImage: "hand.thumbsup", action: viewModel.triggerLikes)
+            }
+          }
         }
+        .onAppear {
+          viewModel.loadConnections()
+        }
+        .border(.red)
       }
-      .onAppear {
-        viewModel.loadConnections()
-      }
-      .border(.red)
     }
   }
 }

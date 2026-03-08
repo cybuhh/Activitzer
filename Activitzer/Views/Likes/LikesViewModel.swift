@@ -3,9 +3,13 @@ import Combine
 import SwiftUI
 
 class LikesViewModel: ObservableObject {
+  @Published var isActivitiesLoading: Bool = false
   @Published var selection: Int?
   @Published var userConnections: [GarminUserConnection] = []
   @Published var userActivities: [GarminActivity] = []
+  @Published var isProcessingLikes: Bool = false
+  @Published var processedLikes: Int = 0
+  @Published var progressLikes: Int = 0
   private var cancellables = Set<AnyCancellable>()
 
   init() {
@@ -14,10 +18,12 @@ class LikesViewModel: ObservableObject {
       .sink { [weak self] _ in
         guard let self else { return }
 
+        isActivitiesLoading = true
         runMainTask {
           let activities = try await self.loadActivities()
           self.userActivities = activities
         }
+        isActivitiesLoading = false
       }
       .store(in: &cancellables)
   }
@@ -42,11 +48,6 @@ class LikesViewModel: ObservableObject {
   }
 
   func refreshConnections() {
-    if userConnections.count != 0 {
-      print(userConnections.first!.displayName)
-      return
-    }
-
     runMainTask {
       let garminService = try GarminService()
       let connections = try await garminService.fetchUserConnections()
@@ -59,11 +60,22 @@ class LikesViewModel: ObservableObject {
   func loadActivities() async throws -> [GarminActivity] {
     let garminService = try GarminService()
     let activities = try await garminService.fetchNewsfeedActivies()
-
     if let selection {
       return activities.filter { $0.ownerId != selection }
+    } else {
+      return activities
     }
+  }
 
-    return activities
+  func triggerLikes() {
+    Task {
+      isProcessingLikes = true
+      for i in 0 ... userActivities.count {
+        try await Task.sleep(for: .seconds(1))
+        processedLikes = i
+        progressLikes = Int(Double(i) / Double(userConnections.count) * 100)
+      }
+      isProcessingLikes = false
+    }
   }
 }
