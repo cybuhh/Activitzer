@@ -28,8 +28,7 @@ public struct GarminService {
   }
 
   public func fetchNewsfeedActivies() async throws -> [ActivitzerKit.GarminActivity] {
-    let newsfeed = try await garminConnect.getNewsfeed()
-    return newsfeed.activityList
+    try await garminConnect.getNewsfeed().activityList
   }
 
   public func fetchUserConnections() async throws -> [ActivitzerKit.GarminUserConnection] {

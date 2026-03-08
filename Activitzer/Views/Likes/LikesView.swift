@@ -32,19 +32,6 @@ struct LikesView: View {
       .onAppear {
         viewModel.loadConnections()
       }
-      .onChange(of: viewModel.selection, initial: false) {
-        Task {
-          do {
-            print("create GarminService")
-            let garminService = try GarminService()
-            print("call fetchNewsfeed")
-            let activities = try await garminService.fetchNewsfeedActivies()
-            print("activities: \(activities)")
-          } catch {
-            print("Error occured: \(error)")
-          }
-        }
-      }
       .border(.red)
     }
   }

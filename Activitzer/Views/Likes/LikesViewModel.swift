@@ -5,6 +5,22 @@ import SwiftUI
 class LikesViewModel: ObservableObject {
   @Published var selection: Int?
   @Published var userConnections: [GarminUserConnection] = []
+  @Published var userActivities: [GarminActivity] = []
+  private var cancellables = Set<AnyCancellable>()
+
+  init() {
+    $selection
+      .dropFirst()
+      .sink { [weak self] _ in
+        guard let self else { return }
+
+        runMainTask {
+          let activities = try await self.loadActivities()
+          self.userActivities = activities
+        }
+      }
+      .store(in: &cancellables)
+  }
 
   func saveUserConnections(_ userConnections: [GarminUserConnection]) {
     if let data = try? JSONEncoder().encode(userConnections) {
@@ -25,28 +41,29 @@ class LikesViewModel: ObservableObject {
     userConnections = loadUserConnections()
   }
 
-  @MainActor
   func refreshConnections() {
     if userConnections.count != 0 {
       print(userConnections.first!.displayName)
       return
     }
 
-    Task {
-      do {
-        let garminService = try GarminService()
-        let connections = try await garminService.fetchUserConnections()
-        userConnections = connections
-      } catch RequestError.tooManyRequests {
-        print("Too many requests")
-      } catch GarminConnectTokenManager.GetValidTokenError.login {
-        print("Can't login and generate new token")
-      } catch GarminConnectTokenManager.GetValidTokenError.noValidAccessToken {
-        print("No valid access token found")
-      } catch {
-        print("Error:", error)
-      }
+    runMainTask {
+      let garminService = try GarminService()
+      let connections = try await garminService.fetchUserConnections()
+
+      self.userConnections = connections
     }
     loadConnections()
+  }
+
+  func loadActivities() async throws -> [GarminActivity] {
+    let garminService = try GarminService()
+    let activities = try await garminService.fetchNewsfeedActivies()
+
+    if let selection {
+      return activities.filter { $0.ownerId != selection }
+    }
+
+    return activities
   }
 }
