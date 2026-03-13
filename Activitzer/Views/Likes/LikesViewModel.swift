@@ -32,6 +32,7 @@ class LikesViewModel: ObservableObject {
     if let data = try? JSONEncoder().encode(userConnections) {
       UserDefaults.standard.set(data, forKey: "userConnections")
     }
+    print("stored connections in cache \(userConnections.count)")
   }
 
   func loadUserConnections() -> [GarminUserConnection] {
@@ -45,17 +46,17 @@ class LikesViewModel: ObservableObject {
 
   func loadConnections() {
     userConnections = loadUserConnections()
+    print("loaded connections from cache \(userConnections.count)")
   }
 
   func refreshConnections() {
     runMainTask {
       let garminService = try GarminService()
       let connections = try await garminService.fetchUserConnections()
-
+      print("fetched connections from api \(connections.count)")
+      self.saveUserConnections(connections)
       self.userConnections = connections
-      print(connections)
     }
-    loadConnections()
   }
 
   func loadActivities() async throws -> [GarminActivity] {
