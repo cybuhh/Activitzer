@@ -1,4 +1,5 @@
 import ActivitzerKit
+import Foundation
 import SwiftUI
 
 struct ConnectionsPicker: View {
@@ -17,4 +18,11 @@ struct ConnectionsPicker: View {
     }
     .pickerStyle(.automatic)
   }
+}
+
+#Preview {
+  ConnectionsPicker(
+    selection: .constant(LikesViewModel.preview.selection),
+    users: LikesViewModel.preview.userConnections
+  )
 }

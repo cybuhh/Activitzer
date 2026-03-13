@@ -35,7 +35,10 @@ struct SettingsView: View {
       .onAppear {
         print("should load creds")
         viewModel.loadCredentails()
-        viewModel.setupDebounce()
+      }
+      .onDisappear {
+        print("should store creds")
+        viewModel.saveCredentials()
       }
 #if !os(macOS)
       .navigationBarTitleDisplayMode(.inline)

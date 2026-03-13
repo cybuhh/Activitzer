@@ -53,6 +53,7 @@ class LikesViewModel: ObservableObject {
       let connections = try await garminService.fetchUserConnections()
 
       self.userConnections = connections
+      print(connections)
     }
     loadConnections()
   }
@@ -78,4 +79,13 @@ class LikesViewModel: ObservableObject {
       isProcessingLikes = false
     }
   }
+
+  static let preview: LikesViewModel = {
+    let userConnection = GarminUserConnection.preview
+
+    let vm = LikesViewModel()
+    vm.userConnections = [userConnection]
+    vm.selection = userConnection.id
+    return vm
+  }()
 }
