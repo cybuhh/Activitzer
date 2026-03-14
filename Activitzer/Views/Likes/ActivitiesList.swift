@@ -4,15 +4,30 @@ import Foundation
 import SwiftUI
 
 struct ActivitiesList: View {
-  @ObservedObject var viewModel: LikesViewModel
+  @Binding var activities: [GarminActivity]
+  @Binding var processedLikes: Int
 
   var body: some View {
     ScrollView {
       VStack {
-        ForEach(Array(viewModel.userActivities.enumerated()), id: \.element.id) { idx, activity in
-          Text("\(idx + 1). \(activity.activityName)").frame(maxWidth: .infinity, alignment: .leading)
+        ForEach(activities.indices, id: \.self) { index in
+          HStack {
+            Image(systemName: activities[index].likedByUser == true || index < processedLikes ? "hand.thumbsup.fill" : "hand.thumbsup")
+            Text("\(index + 1). \(activities[index].activityName)").frame(maxWidth: .infinity, alignment: .leading)
+          }
         }
       }.padding(.horizontal, 15)
     }
   }
+}
+
+#Preview {
+  ActivitiesList(
+    activities: .constant([
+      GarminActivity.preview,
+      GarminActivity.preview,
+      GarminActivity.preview
+    ]),
+    processedLikes: .constant(1)
+  )
 }

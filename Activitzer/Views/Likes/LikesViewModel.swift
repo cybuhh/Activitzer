@@ -10,7 +10,6 @@ class LikesViewModel: ObservableObject {
   @Published var newsfeedActivities: [GarminActivity] = []
   @Published var isProcessingLikes: Bool = false
   @Published var processedLikes: Int = 0
-  @Published var progressLikes: Int = 0
   private var cancellables = Set<AnyCancellable>()
 
   init() {
@@ -62,13 +61,9 @@ class LikesViewModel: ObservableObject {
   }
 
   func loadActivities() async throws -> [GarminActivity] {
-    if newsfeedActivities.count == 0 {
-      let garminService = try GarminService()
-      newsfeedActivities = try await garminService.fetchNewsfeedActivies()
-    }
-
     if let selection {
-      let activities = newsfeedActivities.filter { $0.ownerId == selection }
+      let garminService = try GarminService()
+      let activities = try await garminService.getUserActivitiesFromNewsfeed(id: selection)
       print("Loading activities for \(selection), count \(activities.count) from \(newsfeedActivities.count) total")
       return activities
     } else {
@@ -79,10 +74,9 @@ class LikesViewModel: ObservableObject {
   func triggerLikes() {
     Task {
       isProcessingLikes = true
-      for i in 0 ... userActivities.count {
+      for i in 0 ... userActivities.count - 1 {
         try await Task.sleep(for: .seconds(1))
-        processedLikes = i
-        progressLikes = Int(Double(i) / Double(userConnections.count) * 100)
+        processedLikes += 1
       }
       isProcessingLikes = false
     }

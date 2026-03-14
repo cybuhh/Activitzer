@@ -38,7 +38,10 @@ struct LikesView: View {
             if viewModel.userActivities.isEmpty {
               Text("No activites found.")
             } else {
-              ActivitiesList(viewModel: viewModel)
+              ActivitiesList(
+                activities: $viewModel.userActivities,
+                processedLikes: $viewModel.processedLikes
+              )
               LikesProgress(
                 viewModel: viewModel
               )
