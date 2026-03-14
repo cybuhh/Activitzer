@@ -16,7 +16,7 @@ struct ConnectionsPicker: View {
         Text("Select connection")
       }
     }
-    .pickerStyle(.automatic)
+    .pickerStyle(.inline)
   }
 }
 

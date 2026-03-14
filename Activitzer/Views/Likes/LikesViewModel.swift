@@ -3,10 +3,11 @@ import Combine
 import SwiftUI
 
 class LikesViewModel: ObservableObject {
-  @Published var isActivitiesLoading: Bool = false
+  @Published var isLoading: Bool = false
   @Published var selection: Int?
   @Published var userConnections: [GarminUserConnection] = []
   @Published var userActivities: [GarminActivity] = []
+  @Published var newsfeedActivities: [GarminActivity] = []
   @Published var isProcessingLikes: Bool = false
   @Published var processedLikes: Int = 0
   @Published var progressLikes: Int = 0
@@ -18,12 +19,13 @@ class LikesViewModel: ObservableObject {
       .sink { [weak self] _ in
         guard let self else { return }
 
-        isActivitiesLoading = true
+        isLoading = true
+
         runMainTask {
-          let activities = try await self.loadActivities()
-          self.userActivities = activities
+          self.userActivities = try await self.loadActivities()
+          print("Loaded activities activityCount: \(self.userActivities.count)")
+          self.isLoading = false
         }
-        isActivitiesLoading = false
       }
       .store(in: &cancellables)
   }
@@ -60,12 +62,17 @@ class LikesViewModel: ObservableObject {
   }
 
   func loadActivities() async throws -> [GarminActivity] {
-    let garminService = try GarminService()
-    let activities = try await garminService.fetchNewsfeedActivies()
+    if newsfeedActivities.count == 0 {
+      let garminService = try GarminService()
+      newsfeedActivities = try await garminService.fetchNewsfeedActivies()
+    }
+
     if let selection {
-      return activities.filter { $0.ownerId != selection }
-    } else {
+      let activities = newsfeedActivities.filter { $0.ownerId == selection }
+      print("Loading activities for \(selection), count \(activities.count) from \(newsfeedActivities.count) total")
       return activities
+    } else {
+      return []
     }
   }
 
