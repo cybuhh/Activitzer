@@ -11,8 +11,10 @@ class LikesViewModel: ObservableObject {
   @Published var isProcessingLikes: Bool = false
   @Published var processedLikes: Int = 0
   private var cancellables = Set<AnyCancellable>()
+  private let garminService: GarminService
 
   init() {
+    garminService = try! GarminService()
     $selection
       .dropFirst()
       .sink { [weak self] _ in
@@ -52,8 +54,7 @@ class LikesViewModel: ObservableObject {
 
   func refreshConnections() {
     runMainTask {
-      let garminService = try GarminService()
-      let connections = try await garminService.fetchUserConnections()
+      let connections = try await self.garminService.fetchUserConnections()
       print("fetched connections from api \(connections.count)")
       self.saveUserConnections(connections)
       self.userConnections = connections
@@ -62,7 +63,6 @@ class LikesViewModel: ObservableObject {
 
   func loadActivities() async throws -> [GarminActivity] {
     if let selection {
-      let garminService = try GarminService()
       let activities = try await garminService.getUserActivitiesFromNewsfeed(id: selection)
       print("Loading activities for \(selection), count \(activities.count) from \(newsfeedActivities.count) total")
       return activities
@@ -75,7 +75,10 @@ class LikesViewModel: ObservableObject {
     Task {
       isProcessingLikes = true
       for i in 0 ... userActivities.count - 1 {
-        try await Task.sleep(for: .seconds(1))
+        if userActivities[i].likedByUser != true {
+          _ = try await self.garminService.likeActivity(id: userActivities[i].id)
+          try await Task.sleep(for: .seconds(1))
+        }
         processedLikes += 1
       }
       isProcessingLikes = false
@@ -91,3 +94,4 @@ class LikesViewModel: ObservableObject {
     return vm
   }()
 }
+
