@@ -21,10 +21,13 @@ struct SelectedConnection: View {
       if viewModel.selection != nil {
         ActivitiesList(
           activities: $viewModel.userActivities,
-          processedLikes: $viewModel.processedLikes
+          likesProgressInfo: $viewModel.likesProgressInfo,
+          userProfile: $viewModel.userProfile
         )
         LikesProgress(
-          viewModel: viewModel
+          likesProgressInfo: $viewModel.likesProgressInfo,
+          isProcessingLikes: $viewModel.isProcessingLikes,
+          action: { viewModel.triggerLikes() }
         )
       }
       Spacer()

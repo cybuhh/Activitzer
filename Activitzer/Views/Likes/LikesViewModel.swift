@@ -8,8 +8,9 @@ class LikesViewModel: ObservableObject {
   @Published var userConnections: [GarminUserConnection] = []
   @Published var userActivities: [GarminActivity] = []
   @Published var isProcessingLikes: Bool = false
-  @Published var processedLikes: Int = 0
   @Published var isCredentailsMissing: Bool = false
+  @Published var userProfile: GarminUserProfile?
+  @Published var likesProgressInfo: LikesProgressInfo = .init(total: 0, progress: 0)
 
   private var cancellables = Set<AnyCancellable>()
 
@@ -68,6 +69,12 @@ class LikesViewModel: ObservableObject {
     userConnections = connections
   }
 
+  func loadUserProfile() {
+    runMainTask {
+      self.userProfile = try await self.getGarminService().fetchUserProfile()
+    }
+  }
+
   func refreshConnections() {
     runMainTask {
       let connections = try await self.getGarminService().fetchUserConnections()
@@ -80,7 +87,9 @@ class LikesViewModel: ObservableObject {
   func loadActivities() async throws -> [GarminActivity] {
     if let selection {
       print("Loading activities for \(selection)")
-      return try await getGarminService().getUserActivitiesFromNewsfeed(id: selection)
+      let activities = try await getGarminService().getUserActivitiesFromNewsfeed(id: selection)
+      likesProgressInfo = LikesProgressInfo(total: activities.count, progress: 0)
+      return activities
     } else {
       return []
     }
@@ -91,10 +100,10 @@ class LikesViewModel: ObservableObject {
       isProcessingLikes = true
       for i in 0 ... userActivities.count - 1 {
         if userActivities[i].likedByUser != true {
-          _ = try await self.getGarminService().likeActivity(id: userActivities[i].id)
+//          _ = try a  wait self.getGarminService().likeActivity(id: userActivities[i].id)
           try await Task.sleep(for: .seconds(1))
         }
-        processedLikes += 1
+        likesProgressInfo = LikesProgressInfo(total: userActivities.count, progress: likesProgressInfo.progress + 1)
       }
       isProcessingLikes = false
     }
@@ -106,6 +115,7 @@ class LikesViewModel: ObservableObject {
     let vm = LikesViewModel()
     vm.userConnections = [userConnection]
     vm.userActivities = [GarminActivity.preview]
+    vm.userProfile = GarminUserProfile.preview
     vm.selection = userConnection.id
     return vm
   }()

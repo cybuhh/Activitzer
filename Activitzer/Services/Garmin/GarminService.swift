@@ -37,6 +37,10 @@ public struct GarminService {
     return userConnections.userConnections
   }
   
+  public func fetchUserProfile() async throws -> ActivitzerKit.GarminUserProfile {
+    return try await garminConnect.getUserProfile()
+  }
+  
   public func getUserActivitiesFromNewsfeed(id: Int) async throws -> [ActivitzerKit.GarminActivity] {
     var userActivities: [ActivitzerKit.GarminActivity] = []
     

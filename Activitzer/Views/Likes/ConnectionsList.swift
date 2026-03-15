@@ -15,6 +15,7 @@ struct ConnectionsList: View {
         }
       }
       .onAppear {
+        viewModel.loadUserProfile()
         viewModel.loadConnections()
       }
       .onChange(of: viewModel.selection) {
