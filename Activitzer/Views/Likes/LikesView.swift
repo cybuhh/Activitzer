@@ -8,53 +8,34 @@ struct LikesView: View {
   @State private var isConnectionPickerVisible: Bool = false
   @State private var selectedConnection: GarminUserConnection?
 
-  func toggleConnectionSelector() {
-    isConnectionPickerVisible.toggle()
-  }
-
   var body: some View {
     ZStack {
-      if isConnectionPickerVisible {
-        ConnectionsList(
-          viewModel: viewModel,
-          isVisible: $isConnectionPickerVisible,
-          selectedConnection: $selectedConnection
-        )
-      }
+      if viewModel.isCredentailsMissing {
+        Text("Please set up a Garmin account in the settings.")
+      } else {
+        ZStack {
+          if isConnectionPickerVisible {
+            ConnectionsList(
+              viewModel: viewModel,
+              isVisible: $isConnectionPickerVisible,
+              selectedConnection: $selectedConnection
+            )
+          }
 
-      if !viewModel.isLoading && !isConnectionPickerVisible {
-        VStack {
-          if selectedConnection != nil {
-            HStack {
-              Text("Selected connection:")
-              ConnectionsPickerLabel(user: self.selectedConnection!)
-            }
+          if !viewModel.isLoading && !isConnectionPickerVisible {
+            SelectedConnection(
+              viewModel: viewModel,
+              isConnectionPickerVisible: $isConnectionPickerVisible,
+              selectedConnection: selectedConnection
+            )
           }
-          Button(action: toggleConnectionSelector) {
-            Text("Select connection")
+
+          if viewModel.isLoading {
+            ProgressView("Loading...")
           }
-          .buttonStyle(.borderedProminent)
-          if viewModel.selection != nil {
-            if viewModel.userActivities.isEmpty {
-              Text("No activites found.")
-            } else {
-              ActivitiesList(
-                activities: $viewModel.userActivities,
-                processedLikes: $viewModel.processedLikes
-              )
-              LikesProgress(
-                viewModel: viewModel
-              )
-            }
-          }
-          Spacer()
         }
       }
-
-      if viewModel.isLoading {
-        ProgressView("Loading...")
-      }
-    }
+    }.onAppear { viewModel.checkCredentials() }
   }
 }
 

@@ -7,28 +7,47 @@ class LikesViewModel: ObservableObject {
   @Published var selection: Int?
   @Published var userConnections: [GarminUserConnection] = []
   @Published var userActivities: [GarminActivity] = []
-  @Published var newsfeedActivities: [GarminActivity] = []
   @Published var isProcessingLikes: Bool = false
   @Published var processedLikes: Int = 0
+  @Published var isCredentailsMissing: Bool = false
+
   private var cancellables = Set<AnyCancellable>()
-  private let garminService: GarminService
+
+  private var garminService: GarminService?
+
+  private let credentialService: CredentialsService = .init(KeychainService.shared)
+
+  private func getGarminService() -> GarminService {
+    if garminService == nil {
+      garminService = GarminService()
+    }
+    return garminService!
+  }
 
   init() {
-    garminService = try! GarminService()
     $selection
       .dropFirst()
-      .sink { [weak self] _ in
+      .sink { [weak self] newValue in
         guard let self else { return }
 
         isLoading = true
 
-        runMainTask {
-          self.userActivities = try await self.loadActivities()
-          print("Loaded activities activityCount: \(self.userActivities.count)")
-          self.isLoading = false
+        print("connection selected \(newValue!)")
+        if self.userActivities.first?.ownerId != newValue {
+          print("triggering loadActivities")
+          runMainTask {
+            self.userActivities = try await self.loadActivities()
+            print("loaded activities activityCount: \(self.userActivities.count)")
+            self.isLoading = false
+          }
         }
       }
       .store(in: &cancellables)
+  }
+
+  func checkCredentials() {
+    let credentials = try! credentialService.loadGarminCredentails()
+    isCredentailsMissing = credentials.username.isEmpty || credentials.password.isEmpty
   }
 
   func saveUserConnections(_ userConnections: [GarminUserConnection]) {
@@ -38,23 +57,20 @@ class LikesViewModel: ObservableObject {
     print("stored connections in cache \(userConnections.count)")
   }
 
-  func loadUserConnections() -> [GarminUserConnection] {
-    guard let data = UserDefaults.standard.data(forKey: "userConnections"),
-          let userConnections = try? JSONDecoder().decode([GarminUserConnection].self, from: data)
-    else {
-      return []
-    }
-    return userConnections
-  }
-
   func loadConnections() {
-    userConnections = loadUserConnections()
-    print("loaded connections from cache \(userConnections.count)")
+    guard let data = UserDefaults.standard.data(forKey: "userConnections"),
+          let connections = try? JSONDecoder().decode([GarminUserConnection].self, from: data)
+    else {
+      userConnections = []
+      return
+    }
+
+    userConnections = connections
   }
 
   func refreshConnections() {
     runMainTask {
-      let connections = try await self.garminService.fetchUserConnections()
+      let connections = try await self.getGarminService().fetchUserConnections()
       print("fetched connections from api \(connections.count)")
       self.saveUserConnections(connections)
       self.userConnections = connections
@@ -63,9 +79,8 @@ class LikesViewModel: ObservableObject {
 
   func loadActivities() async throws -> [GarminActivity] {
     if let selection {
-      let activities = try await garminService.getUserActivitiesFromNewsfeed(id: selection)
-      print("Loading activities for \(selection), count \(activities.count) from \(newsfeedActivities.count) total")
-      return activities
+      print("Loading activities for \(selection)")
+      return try await getGarminService().getUserActivitiesFromNewsfeed(id: selection)
     } else {
       return []
     }
@@ -76,7 +91,7 @@ class LikesViewModel: ObservableObject {
       isProcessingLikes = true
       for i in 0 ... userActivities.count - 1 {
         if userActivities[i].likedByUser != true {
-          _ = try await self.garminService.likeActivity(id: userActivities[i].id)
+          _ = try await self.getGarminService().likeActivity(id: userActivities[i].id)
           try await Task.sleep(for: .seconds(1))
         }
         processedLikes += 1
@@ -90,8 +105,8 @@ class LikesViewModel: ObservableObject {
 
     let vm = LikesViewModel()
     vm.userConnections = [userConnection]
+    vm.userActivities = [GarminActivity.preview]
     vm.selection = userConnection.id
     return vm
   }()
 }
-

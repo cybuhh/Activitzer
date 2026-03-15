@@ -8,15 +8,19 @@ struct ActivitiesList: View {
   @Binding var processedLikes: Int
 
   var body: some View {
-    ScrollView {
-      VStack {
-        ForEach(activities.indices, id: \.self) { index in
-          HStack {
-            Image(systemName: activities[index].likedByUser == true || index < processedLikes ? "hand.thumbsup.fill" : "hand.thumbsup")
-            Text("\(index + 1). \(activities[index].activityName)").frame(maxWidth: .infinity, alignment: .leading)
+    if activities.isEmpty {
+      Text("No activites found.")
+    } else {
+      ScrollView {
+        VStack {
+          ForEach(activities.indices, id: \.self) { index in
+            HStack {
+              Image(systemName: activities[index].likedByUser == true || index < processedLikes ? "hand.thumbsup.fill" : "hand.thumbsup")
+              Text("\(index + 1). \(activities[index].activityName)").frame(maxWidth: .infinity, alignment: .leading)
+            }
           }
-        }
-      }.padding(.horizontal, 15)
+        }.padding(.horizontal, 15)
+      }
     }
   }
 }

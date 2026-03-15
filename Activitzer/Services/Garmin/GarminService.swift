@@ -16,14 +16,14 @@ public struct GarminService {
   private let garminTokenStorageKeychain = GarminConnectTokenStorageKeychain(KeychainService.shared)
   private let garminConnect: GarminConnectClient
   
-  public init() throws {
-    enum InitError: Error { case missingCredentials }
+  public init() {
     let garminCredentails = try? credentialsService.loadGarminCredentails()
-    guard let garminCredentails else {
-      throw InitError.missingCredentials
-    }
     
-    let garminConnectTokenManager = GarminConnectTokenManager(username: garminCredentails.username, password: garminCredentails.password, tokenStorage: garminTokenStorageKeychain)
+    let garminConnectTokenManager = GarminConnectTokenManager(
+      username: garminCredentails!.username,
+      password: garminCredentails!.password,
+      tokenStorage: garminTokenStorageKeychain
+    )
     
     garminConnect = GarminConnectClient(getAccessToken: { try await garminConnectTokenManager.getAccessToken() })
   }
