@@ -4,7 +4,8 @@ import SwiftUI
 struct LikesProgress: View {
   @Binding var likesProgressInfo: LikesProgressInfo
   @Binding var isProcessingLikes: Bool
-  var action: () -> Void
+  var actionLike: () -> Void
+  var actionUnlike: () -> Void
 
   var body: some View {
     if likesProgressInfo.total > 0 {
@@ -12,13 +13,19 @@ struct LikesProgress: View {
         Text("\(likesProgressInfo.progress) / \(likesProgressInfo.total)")
       } currentValueLabel: {
         Text("\(likesProgressInfo.percentage)%")
-      }.tint(.purple)
+      }.tint(.clear)
         .progressViewStyle(.linear)
         .padding(.horizontal, 10)
-      if isProcessingLikes == false {
-        Button(action: action) {
-          Label("do it", systemImage: "hand.thumbsup")
-        }
+      HStack {
+        Spacer()
+        Button(action: actionLike) {
+          Label("like", systemImage: "hand.thumbsup")
+        }.buttonStyle(.glassProminent)
+        Spacer()
+        Button(action: actionUnlike) {
+          Label("unlike", systemImage: "hand.thumbsdown")
+        }.buttonStyle(.glassProminent)
+        Spacer()
       }
     }
   }
@@ -37,6 +44,7 @@ struct LikesProgressInfo {
   LikesProgress(
     likesProgressInfo: .constant(LikesProgressInfo(total: 10, progress: 5)),
     isProcessingLikes: .constant(true),
-    action: {}
+    actionLike: {},
+    actionUnlike: {}
   )
 }

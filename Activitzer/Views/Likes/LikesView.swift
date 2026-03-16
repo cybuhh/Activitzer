@@ -6,32 +6,27 @@ import SwiftUI
 struct LikesView: View {
   @StateObject private var viewModel = LikesViewModel()
   @State private var isConnectionPickerVisible: Bool = false
-  @State private var selectedConnection: GarminUserConnection?
 
   var body: some View {
     ZStack {
       if viewModel.isCredentailsMissing {
         Text("Please set up a Garmin account in the settings.")
       } else {
-        ZStack {
-          if isConnectionPickerVisible {
-            ConnectionsList(
+        if viewModel.isLoading {
+          ProgressView("Loading...")
+        } else {
+          VStack {
+            ConnectionsPicker(
               viewModel: viewModel,
-              isVisible: $isConnectionPickerVisible,
-              selectedConnection: $selectedConnection
+              isVisible: $isConnectionPickerVisible
             )
-          }
 
-          if !viewModel.isLoading && !isConnectionPickerVisible {
-            SelectedConnection(
-              viewModel: viewModel,
-              isConnectionPickerVisible: $isConnectionPickerVisible,
-              selectedConnection: selectedConnection
-            )
-          }
-
-          if viewModel.isLoading {
-            ProgressView("Loading...")
+            if !viewModel.isLoading && !isConnectionPickerVisible {
+              SelectedConnection(
+                viewModel: viewModel,
+                isConnectionPickerVisible: $isConnectionPickerVisible
+              )
+            }
           }
         }
       }

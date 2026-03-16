@@ -21,7 +21,13 @@ struct ConnectionsPickerLabel: View {
           .clipShape(Circle())
       }
 
-      Text(user.fullName)
+      Text(user.fullName).foregroundColor(.primary)
     }
   }
+}
+
+#Preview {
+  ConnectionsPickerLabel(
+    user: GarminUserConnection.preview
+  )
 }

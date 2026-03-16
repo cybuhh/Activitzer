@@ -11,6 +11,7 @@ class LikesViewModel: ObservableObject {
   @Published var isCredentailsMissing: Bool = false
   @Published var userProfile: GarminUserProfile?
   @Published var likesProgressInfo: LikesProgressInfo = .init(total: 0, progress: 0)
+  @Published var selectedConnection: GarminUserConnection?
 
   private var cancellables = Set<AnyCancellable>()
 
@@ -95,12 +96,15 @@ class LikesViewModel: ObservableObject {
     }
   }
 
-  func triggerLikes() {
+  func triggerLikeAction(newState: Bool) {
     Task {
       isProcessingLikes = true
       for i in 0 ... userActivities.count - 1 {
-        if userActivities[i].likedByUser != true {
-//          _ = try a  wait self.getGarminService().likeActivity(id: userActivities[i].id)
+        if newState == true && userActivities[i].likedByUser != true {
+          //          _ = try a  wait self.getGarminService().likeActivity(id: userActivities[i].id)
+          try await Task.sleep(for: .seconds(1))
+        } else if newState == false && userActivities[i].likedByUser == true {
+          //          _ = try a  wait self.getGarminService().unlikeActivity(id: userActivities[i].id)
           try await Task.sleep(for: .seconds(1))
         }
         likesProgressInfo = LikesProgressInfo(total: userActivities.count, progress: likesProgressInfo.progress + 1)
@@ -113,7 +117,8 @@ class LikesViewModel: ObservableObject {
     let userConnection = GarminUserConnection.preview
 
     let vm = LikesViewModel()
-    vm.userConnections = [userConnection]
+    vm.userConnections = [userConnection, userConnection, userConnection, userConnection]
+    vm.selectedConnection = userConnection
     vm.userActivities = [GarminActivity.preview]
     vm.userProfile = GarminUserProfile.preview
     vm.selection = userConnection.id
