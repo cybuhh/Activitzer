@@ -42,6 +42,8 @@ class LikesViewModel: ObservableObject {
             print("loaded activities activityCount: \(self.userActivities.count)")
             self.isLoading = false
           }
+        } else {
+          self.isLoading = false
         }
       }
       .store(in: &cancellables)

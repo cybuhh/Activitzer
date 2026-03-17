@@ -11,15 +11,19 @@ struct LikesView: View {
       ProgressView("Loading...")
     } else {
       VStack {
-        ConnectionsPicker(
+        ConnectionPickerButton(
           viewModel: viewModel
         )
 
         if !viewModel.isPickerVisible {
-          SelectedConnection(
+          Activities(
             viewModel: viewModel
           )
         }
+      }.sheet(isPresented: $viewModel.isPickerVisible) {
+        ConnectionsPicker(
+          viewModel: viewModel
+        )
       }
     }
   }

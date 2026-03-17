@@ -1,7 +1,7 @@
 import ActivitzerKit
 import SwiftUI
 
-struct SelectedConnection: View {
+struct Activities: View {
   @ObservedObject var viewModel: LikesViewModel
 
   var body: some View {
@@ -25,7 +25,7 @@ struct SelectedConnection: View {
 }
 
 #Preview {
-  SelectedConnection(
+  Activities(
     viewModel: LikesViewModel.preview
   )
 }
