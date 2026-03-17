@@ -3,7 +3,6 @@ import SwiftUI
 
 struct SelectedConnection: View {
   @ObservedObject var viewModel: LikesViewModel
-  @Binding var isConnectionPickerVisible: Bool
 
   var body: some View {
     VStack(spacing: 15) {
@@ -27,7 +26,6 @@ struct SelectedConnection: View {
 
 #Preview {
   SelectedConnection(
-    viewModel: LikesViewModel.preview,
-    isConnectionPickerVisible: .constant(false)
+    viewModel: LikesViewModel.preview
   )
 }

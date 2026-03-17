@@ -8,7 +8,7 @@ class LikesViewModel: ObservableObject {
   @Published var userConnections: [GarminUserConnection] = []
   @Published var userActivities: [GarminActivity] = []
   @Published var isProcessingLikes: Bool = false
-  @Published var isCredentailsMissing: Bool = false
+  @Published var isPickerVisible: Bool = false
   @Published var userProfile: GarminUserProfile?
   @Published var likesProgressInfo: LikesProgressInfo = .init(total: 0, progress: 0)
   @Published var selectedConnection: GarminUserConnection?
@@ -45,11 +45,6 @@ class LikesViewModel: ObservableObject {
         }
       }
       .store(in: &cancellables)
-  }
-
-  func checkCredentials() {
-    let credentials = try! credentialService.loadGarminCredentails()
-    isCredentailsMissing = credentials.username.isEmpty || credentials.password.isEmpty
   }
 
   func saveUserConnections(_ userConnections: [GarminUserConnection]) {
@@ -121,6 +116,7 @@ class LikesViewModel: ObservableObject {
     vm.selectedConnection = userConnection
     vm.userActivities = [GarminActivity.preview]
     vm.userProfile = GarminUserProfile.preview
+    vm.isPickerVisible = false
     vm.selection = userConnection.id
     return vm
   }()

@@ -3,10 +3,9 @@ import SwiftUI
 
 struct ConnectionsPicker: View {
   @ObservedObject var viewModel: LikesViewModel
-  @Binding var isVisible: Bool
 
   var body: some View {
-    if isVisible {
+    if viewModel.isPickerVisible {
       ScrollView {
         VStack(alignment: .center) {
           List {
@@ -28,14 +27,14 @@ struct ConnectionsPicker: View {
             viewModel.loadConnections()
           }
           .onChange(of: viewModel.selection) {
-            isVisible.toggle()
+            viewModel.isPickerVisible.toggle()
             viewModel.selectedConnection = viewModel.userConnections.first(where: { $0.id == viewModel.selection
             })!
           }
       }
     } else {
       VStack {
-        Button(action: { isVisible.toggle() }) {
+        Button(action: { viewModel.isPickerVisible.toggle() }) {
           Text(viewModel.selectedConnection == nil ? "Select connection" : "Select different connection")
         }.padding(.bottom, 10)
           .buttonStyle(.borderedProminent)
@@ -49,7 +48,6 @@ struct ConnectionsPicker: View {
 
 #Preview {
   ConnectionsPicker(
-    viewModel: LikesViewModel.preview,
-    isVisible: .constant(false)
+    viewModel: LikesViewModel.preview
   )
 }

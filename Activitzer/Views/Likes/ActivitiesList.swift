@@ -9,9 +9,10 @@ struct ActivitiesList: View {
   @Binding var userProfile: GarminUserProfile?
 
   func isLiked(at index: Int) -> Bool {
-    (activities[index].likedByUser == true &&
-      activities[index].activityLikeUserIds != nil &&
-      activities[index].activityLikeUserIds!.contains(userProfile!.profileId)) || index < likesProgressInfo.progress
+    let activity = activities[index]
+    return (
+      activity.activityLikeUserIds?.contains(userProfile!.profileId) != nil
+    ) || index < likesProgressInfo.progress
   }
 
   var body: some View {
