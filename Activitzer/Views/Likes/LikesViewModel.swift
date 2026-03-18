@@ -73,13 +73,11 @@ class LikesViewModel: ObservableObject {
     }
   }
 
-  func refreshConnections() {
-    runMainTask {
-      let connections = try await self.getGarminService().fetchUserConnections()
-      print("fetched connections from api \(connections.count)")
-      self.saveUserConnections(connections)
-      self.userConnections = connections
-    }
+  func refreshConnections() async throws {
+    let connections = try await getGarminService().fetchUserConnections()
+    print("fetched connections from api \(connections.count)")
+    saveUserConnections(connections)
+    userConnections = connections
   }
 
   func loadActivities() async throws -> [GarminActivity] {
