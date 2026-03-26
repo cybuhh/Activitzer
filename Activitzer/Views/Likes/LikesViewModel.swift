@@ -91,18 +91,18 @@ class LikesViewModel: ObservableObject {
     }
   }
 
-  func triggerLikeAction(newState: Bool) {
+  func triggerLikeAction(newState: Bool, profileId: Int) {
     Task {
       isProcessingLikes = true
       for i in 0 ... userActivities.count - 1 {
-        if newState == true && userActivities[i].likedByUser != true {
-          //          _ = try a  wait self.getGarminService().likeActivity(id: userActivities[i].id)
-          try await Task.sleep(for: .seconds(1))
-        } else if newState == false && userActivities[i].likedByUser == true {
-          //          _ = try a  wait self.getGarminService().unlikeActivity(id: userActivities[i].id)
-          try await Task.sleep(for: .seconds(1))
+        let hasLike = userActivities[i].activityLikeUserIds?.contains(userProfile!.profileId) == true
+        if newState == true && !hasLike {
+          _ = try await self.getGarminService().likeActivity(id: userActivities[i].id)
+        } else if newState == false && userActivities[i].likedByUser == true && hasLike {
+          _ = try await self.getGarminService().unlikeActivity(conversationUuid: userActivities[i].conversationUuid!)
         }
-        likesProgressInfo = LikesProgressInfo(total: userActivities.count, progress: likesProgressInfo.progress + 1)
+        try await Task.sleep(for: .seconds(1))
+        likesProgressInfo = LikesProgressInfo(total: userActivities.count, progress: i + 1)
       }
       isProcessingLikes = false
     }

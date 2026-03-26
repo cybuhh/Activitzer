@@ -15,8 +15,8 @@ struct Activities: View {
         LikesProgress(
           likesProgressInfo: $viewModel.likesProgressInfo,
           isProcessingLikes: $viewModel.isProcessingLikes,
-          actionLike: { viewModel.triggerLikeAction(newState: true) },
-          actionUnlike: { viewModel.triggerLikeAction(newState: false) }
+          actionLike: { viewModel.triggerLikeAction(newState: true, profileId: viewModel.userProfile!.profileId) },
+          actionUnlike: { viewModel.triggerLikeAction(newState: false, profileId: viewModel.userProfile!.profileId) }
         )
       }
       Spacer()

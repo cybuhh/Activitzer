@@ -58,6 +58,10 @@ public struct GarminService {
   }
   
   public func likeActivity(id: Int) async throws -> ActivitzerKit.GarminConversationLike {
-    return try await garminConnect.setConversationLike(id: id)
+    return try await garminConnect.addConversationLike(id: id)
+  }
+
+  public func unlikeActivity(conversationUuid: String) async throws -> ActivitzerKit.VoidResponse {
+    return try await garminConnect.removeConversationLike(conversationUuid: conversationUuid)
   }
 }

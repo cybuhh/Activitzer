@@ -11,7 +11,7 @@ struct ActivitiesList: View {
   func isLiked(at index: Int) -> Bool {
     let activity = activities[index]
     return (
-      activity.activityLikeUserIds?.contains(userProfile!.profileId) != nil
+      activity.activityLikeUserIds?.contains(userProfile!.profileId) == true
     ) || index < likesProgressInfo.progress
   }
 
